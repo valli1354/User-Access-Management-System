@@ -7,3 +7,6 @@ server/
 ├── package.json
 ├── .env                # Backend environment variables
 └── README.md (optional, specific to backend if needed)
+
+
+
