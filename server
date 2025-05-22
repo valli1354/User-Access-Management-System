@@ -1,0 +1,9 @@
+server/
+├── entities/           # TypeORM entities (User.js, Software.js, Request.js)
+├── middleware/         # Auth middleware, role checks
+├── routes/             # Express route handlers (auth.js, software.js, requests.js)
+├── data-source.js      # TypeORM DataSource config
+├── index.js            # Backend server entry point
+├── package.json
+├── .env                # Backend environment variables
+└── README.md (optional, specific to backend if needed)
