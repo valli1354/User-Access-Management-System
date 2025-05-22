@@ -1,0 +1,49 @@
+Step 1: Create React App
+Open a terminal in your project root and run:
+npx create-react-app client
+
+After it's done, go to the new folder:
+cd client
+
+Step 2: Install Dependencies
+npm install axios react-router-dom
+
+Step 3: Set Up Routing
+In client/src, 
+replace the content of App.js:
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Signup from './pages/Signup';
+import Login from './pages/Login';
+import RequestAccess from './pages/RequestAccess';
+import CreateSoftware from './pages/CreateSoftware';
+import PendingRequests from './pages/PendingRequests';
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/request-access" element={<RequestAccess />} />
+        <Route path="/create-software" element={<CreateSoftware />} />
+        <Route path="/pending-requests" element={<PendingRequests />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
+
+Step 4: Folder Structure
+Inside client/src, create a new folder:
+pages/
+
+You will create these files inside pages/:
+-----------------------------------------------
+Signup.js
+Login.js
+RequestAccess.js
+CreateSoftware.js
+PendingRequests.js
