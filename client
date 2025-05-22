@@ -1,0 +1,10 @@
+client/
+├── public/             # Public static files (index.html, favicon)
+├── src/
+│   ├── components/     # React components (Login.js, Signup.js, RequestAccess.js, etc.)
+│   ├── api.js          # Axios instance to make API calls
+│   ├── App.js          # Main React app component with routing
+│   └── index.js        # React app entry point
+├── package.json
+├── .env                # Frontend environment variables (optional)
+└── README.md (optional)
