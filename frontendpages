@@ -1,0 +1,254 @@
+1.Signup.js:
+-----------------------------
+
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const Signup = () => {
+  const [formData, setFormData] = useState({ username: '', password: '' });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/auth/signup', formData);
+      alert('Signup successful!');
+    } catch (err) {
+      console.error(err);
+      alert('Signup failed');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Sign Up</h2>
+      <form onSubmit={handleSubmit}>
+        <input name="username" placeholder="Username" onChange={handleChange} required />
+        <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
+        <button type="submit">Register</button>
+      </form>
+    </div>
+  );
+};
+
+export default Signup;
+
+2. Login.js:
+--------------------
+
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const Login = () => {
+  const [formData, setFormData] = useState({ username: '', password: '' });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('role', res.data.role);
+      alert('Login successful');
+
+      if (res.data.role === 'Admin') window.location.href = '/create-software';
+      else if (res.data.role === 'Manager') window.location.href = '/pending-requests';
+      else window.location.href = '/request-access';
+    } catch (err) {
+      console.error(err);
+      alert('Login failed');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <input name="username" placeholder="Username" onChange={handleChange} required />
+        <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
+
+3. CreateSoftware.js (Admin only):
+---------------------------------------
+
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const CreateSoftware = () => {
+  const [formData, setFormData] = useState({ name: '', description: '', accessLevels: '' });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        'http://localhost:5000/api/software',
+        { ...formData, accessLevels: formData.accessLevels.split(',') },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      alert('Software created');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create software');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Create Software</h2>
+      <form onSubmit={handleSubmit}>
+        <input name="name" placeholder="Software Name" onChange={handleChange} required />
+        <input name="description" placeholder="Description" onChange={handleChange} required />
+        <input name="accessLevels" placeholder="Access Levels (comma separated)" onChange={handleChange} required />
+        <button type="submit">Create</button>
+      </form>
+    </div>
+  );
+};
+
+export default CreateSoftware;
+
+4. RequestAccess.js (Employee only):
+--------------------------------------------
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const RequestAccess = () => {
+  const [softwares, setSoftwares] = useState([]);
+  const [formData, setFormData] = useState({ softwareId: '', accessType: '', reason: '' });
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/software').then(res => {
+      setSoftwares(res.data);
+    });
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('http://localhost:5000/api/requests', formData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      alert('Access requested');
+    } catch (err) {
+      console.error(err);
+      alert('Request failed');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Request Software Access</h2>
+      <form onSubmit={handleSubmit}>
+        <select name="softwareId" onChange={handleChange} required>
+          <option value="">Select Software</option>
+          {softwares.map(soft => (
+            <option key={soft.id} value={soft.id}>{soft.name}</option>
+          ))}
+        </select>
+        <select name="accessType" onChange={handleChange} required>
+          <option value="">Access Type</option>
+          <option value="Read">Read</option>
+          <option value="Write">Write</option>
+          <option value="Admin">Admin</option>
+        </select>
+        <textarea name="reason" placeholder="Reason" onChange={handleChange} required />
+        <button type="submit">Request</button>
+      </form>
+    </div>
+  );
+};
+
+export default RequestAccess;
+
+5. PendingRequests.js (Manager only):
+--------------------------------------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const PendingRequests = () => {
+  const [requests, setRequests] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/requests/pending', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    }).then(res => {
+      setRequests(res.data);
+    });
+  }, []);
+
+  const handleAction = async (id, status) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/requests/${id}`,
+        { status },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      alert(`Request ${status}`);
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Update failed');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Pending Access Requests</h2>
+      {requests.length === 0 ? (
+        <p>No requests</p>
+      ) : (
+        requests.map(req => (
+          <div key={req.id}>
+            <p><strong>{req.user.username}</strong> requested <strong>{req.software.name}</strong> ({req.accessType})</p>
+            <p>Reason: {req.reason}</p>
+            <button onClick={() => handleAction(req.id, 'Approved')}>Approve</button>
+            <button onClick={() => handleAction(req.id, 'Rejected')}>Reject</button>
+            <hr />
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
+export default PendingRequests;
+
+Final Touches:
+-------------------
+In client/package.json, add this line for proxy:
+"proxy": "http://localhost:5000
+
+Run your frontend:
+bash
+npm start
+
+Visit:
+
+http://localhost:3000/signup
+
+http://localhost:3000/login
+
+
+
+
